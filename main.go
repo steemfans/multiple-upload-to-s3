@@ -1,13 +1,17 @@
 package main
 
 import (
-	_ "multiple-upload-to-s3/internal/packed"
+	_ "github.com/steemfans/multiple-upload-to-s3/internal/packed"
 
 	"github.com/gogf/gf/v2/os/gctx"
 
-	"multiple-upload-to-s3/internal/cmd"
+	"github.com/steemfans/multiple-upload-to-s3/internal/cmd"
 )
 
 func main() {
+	err := cmd.Main.AddCommand(cmd.Web, cmd.S3)
+	if err != nil {
+		panic(err)
+	}
 	cmd.Main.Run(gctx.New())
 }

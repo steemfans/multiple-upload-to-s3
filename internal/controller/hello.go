@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"multiple-upload-to-s3/api/v1"
+	v1 "github.com/steemfans/multiple-upload-to-s3/api/v1"
 )
 
 var (
