@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/cheggaaa/pb"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -75,8 +76,18 @@ var (
 				log.Fatalln(err)
 			}
 
+			fileinfo, err := os.Stat(src.String())
+			if err != nil {
+				log.Fatalln(err)
+			}
+			filesize := fileinfo.Size()
+
+			progress := pb.New64(filesize)
+			progress.Start()
+
 			if _, err := s3Client.FPutObject(context.Background(), bucketname.String(), objectname.String(), src.String(), minio.PutObjectOptions{
 				ContentType: mtype.String(),
+				Progress:    progress,
 			}); err != nil {
 				log.Fatalln(err)
 			}
