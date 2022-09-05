@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/cheggaaa/pb"
 	"github.com/gabriel-vasile/mimetype"
@@ -85,7 +86,10 @@ var (
 			progress := pb.New64(filesize)
 			progress.Start()
 
-			if _, err := s3Client.FPutObject(context.Background(), bucketname.String(), objectname.String(), src.String(), minio.PutObjectOptions{
+			s3Ctx, cancel := context.WithTimeout(context.Background(), 7200*time.Second)
+			defer cancel()
+
+			if _, err := s3Client.FPutObject(s3Ctx, bucketname.String(), objectname.String(), src.String(), minio.PutObjectOptions{
 				ContentType: mtype.String(),
 				Progress:    progress,
 			}); err != nil {
