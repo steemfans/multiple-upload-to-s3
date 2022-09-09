@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	err := cmd.Main.AddCommand(cmd.Web, cmd.S3)
+	err := cmd.Main.AddCommand(
+		cmd.Web,
+		cmd.S3Put,
+	)
 	if err != nil {
 		panic(err)
 	}
