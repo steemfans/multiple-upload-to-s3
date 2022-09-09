@@ -15,7 +15,7 @@ func LoadConfig() (cfg aws.Config, err error) {
 	awsSecretKey := os.Getenv("AWS_SECRET_KEY")
 	endpoint := os.Getenv("ENDPOINT")
 	if awsAccessKey == "" || awsSecretKey == "" {
-		errors.New("unset aws access key or secret key")
+		err = errors.New("unset aws access key or secret key")
 		return
 	}
 
