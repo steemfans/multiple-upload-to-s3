@@ -11,6 +11,7 @@ import (
 func main() {
 	err := cmd.Main.AddCommand(
 		cmd.Web,
+		cmd.CreateDB,
 		cmd.S3Put,
 	)
 	if err != nil {

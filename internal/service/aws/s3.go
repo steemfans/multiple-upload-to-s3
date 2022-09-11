@@ -50,4 +50,8 @@ func (s *S3) Upload(ctx gctx.Ctx, bucketName, fileKey, src string) (output *mana
 	return
 }
 
+func (s *S3) FPutMultiPart(ctx gctx.Ctx, bucketName, fileKey, src string) (output *manager.UploadOutput, err error) {
+	return
+}
+
 var SS3 = S3{}

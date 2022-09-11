@@ -8,8 +8,10 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/glog"
 
+	"github.com/steemfans/multiple-upload-to-s3/internal/consts"
 	"github.com/steemfans/multiple-upload-to-s3/internal/controller"
 	"github.com/steemfans/multiple-upload-to-s3/internal/service/aws"
+	"github.com/steemfans/multiple-upload-to-s3/internal/service/sqlite"
 )
 
 var (
@@ -32,6 +34,18 @@ var (
 			})
 			s.Run()
 			return nil
+		},
+	}
+	CreateDB = &gcmd.Command{
+		Name:        "create-db",
+		Brief:       "create an empty db",
+		Description: "Because GoFrame gets dao structure from DB. So we should create an empty db before running `gf gen dao`",
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			err = sqlite.GenerateNewDb(consts.EMPTY_DB_PATH, consts.EMPTY_DB_NAME)
+			if err != nil {
+				panic(err)
+			}
+			return
 		},
 	}
 	S3Put = &gcmd.Command{
