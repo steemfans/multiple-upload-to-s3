@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.18
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.31
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.9
+	github.com/gogf/gf/contrib/drivers/sqlite/v2 v2.1.4 // indirect
 	github.com/gogf/gf/v2 v2.0.6
 	github.com/mattn/go-sqlite3 v1.14.15
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
