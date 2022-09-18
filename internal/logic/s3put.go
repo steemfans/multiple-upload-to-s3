@@ -170,6 +170,7 @@ func CompleteTask(ctx context.Context, taskId int) (result *s3.CompleteMultipart
 	currentWorkPath := gfile.Pwd()
 	dbName := sqlite.GetDbName(task.BucketName, task.FileKey)
 	err = os.Remove(currentWorkPath + "/" + dbName)
+	glog.Info(ctx, "Upload finished.")
 	return
 }
 
@@ -254,7 +255,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 			CompleteTask(ctx, taskId)
 			return
 		}
-		glog.Infof(ctx, "Process: offset[%s], partID: [#%s]", offset, currentPartNum)
+		glog.Infof(ctx, "Process: offset[%d], partID: [#%d]", offset, currentPartNum)
 		err = Upload(ctx, taskId, currentPartNum, buf)
 		if err != nil {
 			glog.Fatal(ctx, "Upload failed", err)
