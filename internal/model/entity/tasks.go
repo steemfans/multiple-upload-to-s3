@@ -7,7 +7,7 @@ package entity
 // Tasks is the golang structure for table tasks.
 type Tasks struct {
 	Id         int    `json:"id"         ` //
-	PartId     string `json:"partId"     ` //
+	UploadId   string `json:"uploadId"   ` //
 	BucketName string `json:"bucketName" ` //
 	FileKey    string `json:"fileKey"    ` //
 	Src        string `json:"src"        ` //

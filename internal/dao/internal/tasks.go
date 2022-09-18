@@ -21,7 +21,7 @@ type TasksDao struct {
 // TasksColumns defines and stores column names for table tasks.
 type TasksColumns struct {
 	Id         string //
-	PartId     string //
+	UploadId   string //
 	BucketName string //
 	FileKey    string //
 	Src        string //
@@ -31,7 +31,7 @@ type TasksColumns struct {
 //  tasksColumns holds the columns for table tasks.
 var tasksColumns = TasksColumns{
 	Id:         "id",
-	PartId:     "part_id",
+	UploadId:   "upload_id",
 	BucketName: "bucket_name",
 	FileKey:    "file_key",
 	Src:        "src",

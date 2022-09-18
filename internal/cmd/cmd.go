@@ -6,11 +6,10 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcmd"
-	"github.com/gogf/gf/v2/os/glog"
 
 	"github.com/steemfans/multiple-upload-to-s3/internal/consts"
 	"github.com/steemfans/multiple-upload-to-s3/internal/controller"
-	"github.com/steemfans/multiple-upload-to-s3/internal/service/aws"
+	"github.com/steemfans/multiple-upload-to-s3/internal/logic"
 	"github.com/steemfans/multiple-upload-to-s3/internal/service/sqlite"
 )
 
@@ -53,24 +52,10 @@ var (
 		Brief:       "upload file to s3",
 		Description: "upload file to s3",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-			p, err := gcmd.Parse(g.MapStrBool{
-				"src":        true,
-				"bucketname": true,
-				"objectname": true,
-				"endpoint":   true,
-			})
+			err = logic.S3Put(ctx, parser)
 			if err != nil {
 				panic(err)
 			}
-			src := p.GetOpt("src")
-			bucketName := p.GetOpt("bucketname")
-			objectName := p.GetOpt("objectname")
-
-			output, err := aws.SS3.Upload(ctx, bucketName.String(), objectName.String(), src.String())
-			if err != nil {
-				glog.Fatal(ctx, "Upload Failed: ", err)
-			}
-			glog.Info(ctx, output)
 			return
 		},
 	}

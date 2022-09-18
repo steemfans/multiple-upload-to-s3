@@ -3,6 +3,7 @@ module github.com/steemfans/multiple-upload-to-s3
 go 1.15
 
 require (
+	github.com/aws/aws-sdk-go v1.44.100
 	github.com/aws/aws-sdk-go-v2 v1.16.14
 	github.com/aws/aws-sdk-go-v2/config v1.17.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.18
