@@ -148,11 +148,11 @@ func CompleteTask(ctx context.Context, taskId int) (result *s3.CompleteMultipart
 		return
 	}
 
-	for i, p := range parts {
-		completedParts[i] = s3types.CompletedPart{
+	for _, p := range parts {
+		completedParts = append(completedParts, s3types.CompletedPart{
 			ETag:       awsSDK.String(p.Etag),
 			PartNumber: int32(p.PartNum),
-		}
+		})
 	}
 
 	var out = s3.CreateMultipartUploadOutput{
@@ -161,7 +161,16 @@ func CompleteTask(ctx context.Context, taskId int) (result *s3.CompleteMultipart
 		UploadId: awsSDK.String(task.UploadId),
 	}
 
-	return aws.SS3.CompleteMultipartUpload(ctx, &out, completedParts)
+	result, err = aws.SS3.CompleteMultipartUpload(ctx, &out, completedParts)
+	if err != nil {
+		glog.Warning(ctx, "Complete Mutipart Upload failed.", err)
+		return
+	}
+	// remove db
+	currentWorkPath := gfile.Pwd()
+	dbName := sqlite.GetDbName(task.BucketName, task.FileKey)
+	err = os.Remove(currentWorkPath + "/" + dbName)
+	return
 }
 
 func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
@@ -245,7 +254,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 			CompleteTask(ctx, taskId)
 			return
 		}
-		glog.Debug(ctx, "process:", offset, currentPartNum)
+		glog.Infof(ctx, "Process: offset[%s], partID: [#%s]", offset, currentPartNum)
 		err = Upload(ctx, taskId, currentPartNum, buf)
 		if err != nil {
 			glog.Fatal(ctx, "Upload failed", err)
