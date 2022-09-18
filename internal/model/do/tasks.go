@@ -12,7 +12,7 @@ import (
 type Tasks struct {
 	g.Meta     `orm:"table:tasks, do:true"`
 	Id         interface{} //
-	PartId     interface{} //
+	UploadId   interface{} //
 	BucketName interface{} //
 	FileKey    interface{} //
 	Src        interface{} //
