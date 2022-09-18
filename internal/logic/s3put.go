@@ -80,6 +80,10 @@ func createTask(ctx context.Context, uploadId, bucketName, fileKey, src string) 
 		"file_key":    fileKey,
 		"src":         src,
 	})
+	if err != nil {
+		glog.Warning(ctx, "Get task failed:", err)
+		return
+	}
 	tmpId, err := result.LastInsertId()
 	return int(tmpId), err
 }
