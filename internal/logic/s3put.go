@@ -24,7 +24,7 @@ import (
 
 // file exist -- true;
 // file not exist -- false.
-func checkDb(path, dbName string) (result bool) {
+func CheckDb(path, dbName string) (result bool) {
 	if _, err := os.Stat(path + "/" + dbName); err == nil {
 		return true
 	}
@@ -34,7 +34,7 @@ func checkDb(path, dbName string) (result bool) {
 // taskId is 0 means new task;
 // taskId is not 0 and lastPartNum is 0 means no upload part;
 // taskId and lastPartNum are not 0 means there is an unfinished task.
-func checkTask(ctx context.Context, bucketName, fileKey, src string) (taskId, lastPartNum int, uploadId string, err error) {
+func CheckTask(ctx context.Context, bucketName, fileKey, src string) (taskId, lastPartNum int, uploadId string, err error) {
 	db, err := gdb.Instance()
 	if err != nil {
 		glog.Warning(ctx, "Get db instance failed:", err)
@@ -67,7 +67,7 @@ func checkTask(ctx context.Context, bucketName, fileKey, src string) (taskId, la
 	return
 }
 
-func createTask(ctx context.Context, uploadId, bucketName, fileKey, src string) (id int, err error) {
+func CreateTask(ctx context.Context, uploadId, bucketName, fileKey, src string) (id int, err error) {
 	db, err := gdb.Instance()
 	if err != nil {
 		glog.Warning(ctx, "Get db instance failed:", err)
@@ -88,7 +88,7 @@ func createTask(ctx context.Context, uploadId, bucketName, fileKey, src string) 
 	return int(tmpId), err
 }
 
-func upload(ctx context.Context, taskId int, partNum int, fileContent []byte) (err error) {
+func Upload(ctx context.Context, taskId int, partNum int, fileContent []byte) (err error) {
 	db, err := gdb.Instance()
 	if err != nil {
 		glog.Warning(ctx, "Get db instance failed:", err)
@@ -125,7 +125,7 @@ func upload(ctx context.Context, taskId int, partNum int, fileContent []byte) (e
 	return
 }
 
-func completeTask(ctx context.Context, taskId int) (result *s3.CompleteMultipartUploadOutput, err error) {
+func CompleteTask(ctx context.Context, taskId int) (result *s3.CompleteMultipartUploadOutput, err error) {
 	var completedParts []s3types.CompletedPart
 	var parts []entity.Parts
 	var task entity.Tasks
@@ -176,7 +176,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 
 	glog.Info(ctx, src, endpoint)
 	// check if db exist
-	if !checkDb(currentWorkPath, dbName) {
+	if !CheckDb(currentWorkPath, dbName) {
 		// create db
 		err = sqlite.GenerateNewDb(currentWorkPath, dbName)
 		if err != nil {
@@ -196,7 +196,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 	var uploadId string
 	var taskId, lastPartNum int
 	// check if new task
-	taskId, lastPartNum, _, err = checkTask(ctx, bucketName, objectName, src)
+	taskId, lastPartNum, _, err = CheckTask(ctx, bucketName, objectName, src)
 	if taskId == 0 {
 		// create new task
 		out, err = aws.SS3.CreateMultipartUpload(ctx, bucketName, objectName, src)
@@ -205,7 +205,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 			return
 		}
 		uploadId = awsSDK.ToString(out.UploadId)
-		taskId, err = createTask(ctx, uploadId, bucketName, objectName, src)
+		taskId, err = CreateTask(ctx, uploadId, bucketName, objectName, src)
 		if err != nil {
 			glog.Warning(ctx, "Create task db data failed.", err)
 			return
@@ -232,7 +232,7 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 		currentPartNum = lastPartNum + 1
 		offset = blockSize * int64(lastPartNum)
 		if offset >= fileSize {
-			completeTask(ctx, taskId)
+			CompleteTask(ctx, taskId)
 			return
 		}
 	}
@@ -242,18 +242,18 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 	for offset < fileSize {
 		_, err = file.Read(buf)
 		if err == io.EOF {
-			completeTask(ctx, taskId)
+			CompleteTask(ctx, taskId)
 			return
 		}
 		glog.Debug(ctx, "process:", offset, currentPartNum)
-		err = upload(ctx, taskId, currentPartNum, buf)
+		err = Upload(ctx, taskId, currentPartNum, buf)
 		if err != nil {
 			glog.Fatal(ctx, "Upload failed", err)
 		}
 		currentPartNum += 1
 		offset += blockSize
 		if offset >= fileSize {
-			completeTask(ctx, taskId)
+			CompleteTask(ctx, taskId)
 			return
 		}
 		_, err = file.Seek(offset, 0)
