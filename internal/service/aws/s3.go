@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -129,8 +130,9 @@ func (s *S3) UploadPart(ctx gctx.Ctx, resp *s3.CreateMultipartUploadOutput, file
 				}
 				return nil, err
 			}
-			glog.Warningf(ctx, "Retrying to upload part #%v", partNumber)
+			glog.Warningf(ctx, "Retrying to upload part #%v affter 10 seconds.", partNumber)
 			tryNum++
+			time.Sleep(10 * time.Second)
 		} else {
 			glog.Infof(ctx, "Uploaded part #%v", partNumber)
 			return out, err
