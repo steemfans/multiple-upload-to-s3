@@ -21,7 +21,7 @@ func GetFileType(src string) (fileType string, err error) {
 	return
 }
 
-func Md5(content []byte) (result string) {
-	hash := md5.Sum(content)
+func Md5(content *([]byte)) (result string) {
+	hash := md5.Sum(*content)
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
