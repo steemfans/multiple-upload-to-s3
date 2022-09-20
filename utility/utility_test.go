@@ -9,9 +9,9 @@ import (
 
 func TestMd5(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
-		test := "hello world"
 		expectStr := "XrY7u+Ae7tCTyyK7j1rNww=="
-		result := utility.Md5([]byte(test))
+		buf := []byte("hello world")
+		result := utility.Md5(&buf)
 		t.Assert(expectStr, result)
 	})
 }

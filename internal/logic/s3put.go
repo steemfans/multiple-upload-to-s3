@@ -88,7 +88,7 @@ func CreateTask(ctx context.Context, uploadId, bucketName, fileKey, src string) 
 	return int(tmpId), err
 }
 
-func Upload(ctx context.Context, taskId int, partNum int, fileContent []byte) (err error) {
+func Upload(ctx context.Context, taskId int, partNum int, fileContent *([]byte)) (err error) {
 	db, err := gdb.Instance()
 	if err != nil {
 		glog.Warning(ctx, "Get db instance failed:", err)
@@ -232,7 +232,13 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 	fileSize := fileInfo.Size()
 	buf := make([]byte, blockSize)
 
-	var offset int64
+	var offset, total int64
+
+	total = fileSize / blockSize
+
+	if total*blockSize > fileSize {
+		total += 1
+	}
 
 	currentPartNum := 1
 	offset = 0
@@ -255,8 +261,8 @@ func S3Put(ctx context.Context, parser *gcmd.Parser) (err error) {
 			CompleteTask(ctx, taskId)
 			return
 		}
-		glog.Infof(ctx, "Process: offset[%d], partID: [#%d]", offset, currentPartNum)
-		err = Upload(ctx, taskId, currentPartNum, buf)
+		glog.Infof(ctx, "Process: offset[%d], partID: [#%d/%d]", offset, currentPartNum, total)
+		err = Upload(ctx, taskId, currentPartNum, &buf)
 		if err != nil {
 			glog.Fatal(ctx, "Upload failed", err)
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/genv"
 	"github.com/gogf/gf/v2/os/glog"
@@ -89,17 +90,8 @@ func (s *S3) CreateMultipartUpload(ctx gctx.Ctx, bucketName, fileKey, src string
 	return
 }
 
-func (s *S3) UploadPart(ctx gctx.Ctx, resp *s3.CreateMultipartUploadOutput, fileBytes []byte, partNumber int32) (out *s3.UploadPartOutput, err error) {
+func (s *S3) UploadPart(ctx gctx.Ctx, resp *s3.CreateMultipartUploadOutput, fileBytes *([]byte), partNumber int32) (out *s3.UploadPartOutput, err error) {
 	tryNum := 1
-	partInput := &s3.UploadPartInput{
-		Body:          bytes.NewReader(fileBytes),
-		Bucket:        resp.Bucket,
-		Key:           resp.Key,
-		PartNumber:    partNumber,
-		UploadId:      resp.UploadId,
-		ContentLength: int64(len(fileBytes)),
-		ContentMD5:    aws.String(utility.Md5(fileBytes)),
-	}
 
 	client, err := s.GetInstance()
 	if err != nil {
@@ -107,7 +99,29 @@ func (s *S3) UploadPart(ctx gctx.Ctx, resp *s3.CreateMultipartUploadOutput, file
 	}
 
 	for tryNum <= maxRetries {
+		// init bar
+		ioReaderData := bytes.NewReader(*fileBytes)
+		bar := pb.Full.Start(len(*fileBytes))
+		barReader := bar.NewProxyReader(ioReaderData)
+
+		// init part input
+		partInput := &s3.UploadPartInput{
+			Body:          barReader,
+			Bucket:        resp.Bucket,
+			Key:           resp.Key,
+			PartNumber:    partNumber,
+			UploadId:      resp.UploadId,
+			ContentLength: int64(len(*fileBytes)),
+			ContentMD5:    aws.String(utility.Md5(fileBytes)),
+		}
+
+		// start upload
 		out, err := client.UploadPart(ctx, partInput)
+
+		// finish bar
+		bar.Finish()
+
+		// err
 		if err != nil {
 			if tryNum == maxRetries {
 				if aerr, ok := err.(awserr.Error); ok {
